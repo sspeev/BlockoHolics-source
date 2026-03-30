@@ -1,0 +1,52 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Tt]estResults/
+*.swp
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Arduino
+# Ignore build artifacts
+sketchMain/build/
+*.hex
+*.elf
+*.o
+*.a
+*.d
+*.bin
+
+# User-specific Arduino settings
+.arduinoIDE/
+arduino15/
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# AppSettings (Secrets)
+# You might want to ignore appsettings.json if it contains secrets
+# appsettings.json
+# appsettings.Development.json
