@@ -1,0 +1,83 @@
+﻿.leaderboard-page {
+    --neon-cyan: #00f2ff;
+    --neon-orange: #ff8c00;
+    --cyber-bg: #0a0b10;
+
+    background-color: var(--cyber-bg);
+    background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2048');
+    background-size: cover;
+    background-position: center;
+    font-family: 'Inter', sans-serif;
+    color: white;
+    margin: 0;
+}
+
+/* lightweight overlay (no backdrop-filter on full screen) */
+.radial-overlay {
+    background:
+        radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.60) 100%),
+        rgba(0, 0, 0, 0.18);
+}
+
+.glow-cyan {
+    border: 1px solid rgba(0, 242, 255, 0.45);
+    box-shadow: 0 0 6px rgba(0, 242, 255, 0.20);
+}
+
+.glow-orange {
+    border: 1px solid rgba(255, 140, 0, 0.55);
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.22);
+}
+
+.text-glow-cyan {
+    text-shadow: 0 0 6px rgba(0, 242, 255, 0.45);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 255, 0.3);
+    border-radius: 10px;
+}
+
+@keyframes scroll-indicator {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(300%); }
+}
+.animate-scroll-indicator { animation: scroll-indicator 4s ease-in-out infinite; }
+
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+
+.text-neon-cyan { color: var(--neon-cyan); }
+.text-neon-orange { color: var(--neon-orange); }
+.border-neon-cyan { border-color: var(--neon-cyan); }
+
+.bg-neon-cyan\/10 { background-color: rgba(0, 242, 255, 0.1); }
+.bg-neon-cyan\/5 { background-color: rgba(0, 242, 255, 0.05); }
+.bg-neon-orange\/10 { background-color: rgba(255, 140, 0, 0.1); }
+.bg-neon-orange\/5 { background-color: rgba(255, 140, 0, 0.05); }
+
+.leaderboard-grid {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) 120px 130px;
+    align-items: center;
+    column-gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .leaderboard-grid {
+        grid-template-columns: 56px minmax(0, 1fr) 95px 105px;
+        column-gap: 0.75rem;
+    }
+}

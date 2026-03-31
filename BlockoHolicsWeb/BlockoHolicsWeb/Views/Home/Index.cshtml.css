@@ -1,0 +1,24 @@
+﻿/* Scroll-Driven Animation Utilities */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+}
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+/* Glassmorphism Effect */
+.glass-panel {
+    background: rgba(23, 26, 26, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(127, 238, 243, 0.1);
+    border-radius: 8px;
+}
+
+/* Hero Glow */
+.glow-text {
+    text-shadow: 0 0 20px rgba(0, 151, 156, 0.6);
+}

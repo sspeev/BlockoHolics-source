@@ -19,9 +19,14 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BlockoHolicsWeb - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="mt-auto px-8 py-12 border-t border-white/5 bg-black">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-[var(--arduino-blue)] font-black text-xl tracking-tighter">BLOCKOHOLICS LABORATORY</div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-widest">&copy; 2026 BlockoHolics Laboratory. All Rights Reserved.</div>
+            <div class="flex gap-8 text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                <a asp-controller="Home" asp-action="Privacy" class="hover:text-[var(--arduino-blue)] transition-colors">Privacy</a>
+                <a asp-controller="Home" asp-action="Contacts" class="hover:text-[var(--arduino-blue)] transition-colors">Contact</a>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
