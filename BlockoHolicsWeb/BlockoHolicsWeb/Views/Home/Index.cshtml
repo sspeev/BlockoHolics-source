@@ -26,6 +26,9 @@
             <a asp-action="Play" class="bg-[var(--arduino-blue)] text-black px-8 py-4 font-bold uppercase tracking-widest hover:bg-white transition-colors duration-300 inline-block">
                 Start Stacking
             </a>
+            <a asp-action="Contacts" class="bg-white text-black px-8 py-4 font-bold uppercase tracking-widest hover:bg-[var(--arduino-blue)] transition-colors duration-300 inline-block">
+                Contacts
+            </a>
             
         </div>
     </section>
@@ -146,8 +149,8 @@
                 }
             </div>
 
-            <a href="/Home/Leaderboard" class="w-full mt-12 py-6 border border-white/10 text-xs uppercase font-bold tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 inline-block text-center">
-                Enter Competition Protocol →
+            <a asp-controller="Home" asp-action="Leaderboard" class="w-full mt-12 py-6 border border-white/10 text-xs uppercase font-bold tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 inline-block text-center">
+                Enter Leaderboard →
             </a>
         </div>
     </section>

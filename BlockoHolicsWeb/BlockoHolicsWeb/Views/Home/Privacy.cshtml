@@ -1,6 +1,61 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Privacy | BlockoHolics";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<section class="privacy-page min-h-screen px-6 py-16 md:px-10">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-10">
+            <p class="text-xs uppercase tracking-[0.3em] text-[var(--arduino-blue)] font-bold mb-3">Legal</p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight uppercase">Privacy Policy</h1>
+            <p class="mt-4 text-gray-400">
+                Last updated: @DateTime.UtcNow.ToString("MMMM dd, yyyy")
+            </p>
+        </header>
+
+        <div class="space-y-6">
+            <article class="policy-card p-6">
+                <h2 class="policy-title">1. Data We Collect</h2>
+                <p class="policy-text">
+                    We may collect player names, run times, and game status metadata (such as completion state) to power leaderboard features.
+                </p>
+            </article>
+
+            <article class="policy-card p-6">
+                <h2 class="policy-title">2. How We Use Data</h2>
+                <p class="policy-text">
+                    Collected data is used only to display rankings, improve gameplay experience, and monitor system behavior.
+                </p>
+            </article>
+
+            <article class="policy-card p-6">
+                <h2 class="policy-title">3. Storage and Retention</h2>
+                <p class="policy-text">
+                    Data is stored in the project database and retained for leaderboard continuity unless removal is requested.
+                </p>
+            </article>
+
+            <article class="policy-card p-6">
+                <h2 class="policy-title">4. Third-Party Services</h2>
+                <p class="policy-text">
+                    This page may include links to third-party platforms (for example GitHub). Their privacy policies apply independently.
+                </p>
+            </article>
+
+            <article class="policy-card p-6">
+                <h2 class="policy-title">5. Contact</h2>
+                <p class="policy-text">
+                    For privacy-related requests, use the contact page.
+                </p>
+                <a asp-controller="Home" asp-action="Contacts" class="inline-block mt-4 btn-link-custom">
+                    Go to Contact →
+                </a>
+            </article>
+        </div>
+
+        <div class="mt-10">
+            <a asp-controller="Home" asp-action="Index" class="text-sm uppercase tracking-[0.2em] text-gray-300 hover:text-white transition-colors">
+                ← Back to Home
+            </a>
+        </div>
+    </div>
+</section>

@@ -33,6 +33,8 @@ public class Timer(
 
     public TimeSpan Elapsed => _stopwatch.Elapsed;
 
+    public bool IsRunning => _stopwatch.IsRunning;
+
     public TimeSpan? LastStoppedElapsed
     {
         get

@@ -18,7 +18,9 @@ public class DbService(BlockoHolicsDbContext context) : IDbService
                 ElapsedSeconds = p.ElapsedSeconds,
                 IsFinished = p.IsFinished
             })
-            .OrderBy(p => p.ElapsedSeconds)
+            .OrderByDescending(p => p.IsFinished)   // finished first
+            .ThenBy(p => p.ElapsedSeconds)          // fastest first
+            .ThenBy(p => p.Name)                    // stable tie-breaker
             .ToListAsync();
     }
 

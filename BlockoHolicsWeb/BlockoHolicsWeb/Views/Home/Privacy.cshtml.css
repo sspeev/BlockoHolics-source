@@ -1,0 +1,42 @@
+.privacy-page {
+    background:
+        radial-gradient(circle at top, rgba(0, 151, 156, 0.12), transparent 55%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.65));
+}
+
+.policy-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(0, 151, 156, 0.25);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.policy-title {
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--arduino-blue);
+    margin-bottom: 0.75rem;
+}
+
+.policy-text {
+    color: #c8d0d0;
+    line-height: 1.7;
+}
+
+.btn-link-custom {
+    background: var(--arduino-blue);
+    color: #0b0f10;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-link-custom:hover {
+    background: #ffffff;
+}

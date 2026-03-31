@@ -58,18 +58,30 @@
 
         <h1 class="text-6xl font-black mb-6 text-[var(--arduino-blue)]">Timer</h1>
 
-        <div class="text-7xl font-mono font-bold mb-6" id="timerDisplay">00:00.00</div>
+        <div class="text-7xl font-mono font-bold mb-3" id="timerDisplay">00:00.00</div>
+        <div id="serialState" class="text-xs uppercase tracking-widest text-gray-400 mb-6">Waiting for serial...</div>
 
-        <div class="flex items-center justify-center gap-4">
-            <button id="startStopBtn" class="bg-[var(--arduino-blue)] text-black px-6 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors duration-200">Start</button>
-            <button id="resetBtn" class="border border-white/20 text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white/5 transition-colors duration-200">Reset</button>
-        <form id="submitForm" method="post" action="/Home/SubmitRun">
+        <form id="submitForm" method="post" asp-controller="Home" asp-action="SubmitRun" class="max-w-md mx-auto space-y-4">
             @Html.AntiForgeryToken()
+
+            <input type="text"
+                   id="playerName"
+                   name="playerName"
+                   value="Anonymous"
+                   maxlength="100"
+                   class="w-full px-4 py-3 bg-black/40 border border-white/20 rounded text-white"
+                   placeholder="Enter player name" />
+
             <input type="hidden" name="elapsedMs" id="elapsedMs" value="0" />
-            <input type="hidden" name="playerName" id="playerName" value="Anonymous" />
-            <button id="endRunBtn" type="button" class="border border-white/10 text-xs uppercase font-bold tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 inline-block px-6 py-3">End Run</button>
+            <input type="hidden" name="isFinished" id="isFinished" value="false" />
+
+            <button id="submitRunBtn"
+                    type="submit"
+                    disabled
+                    class="w-full border border-white/20 text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                Submit Time
+            </button>
         </form>
-        </div>
 
         <p class="mt-6 text-sm text-gray-400">Use the Start button to begin timing your run. Press End Run to submit or view leaderboard.</p>
     </div>
@@ -79,13 +91,10 @@
     <script>
         (function () {
             const display = document.getElementById('timerDisplay');
-            const startStopBtn = document.getElementById('startStopBtn');
-            const resetBtn = document.getElementById('resetBtn');
-
-            let running = false;
-            let startTime = 0;
-            let elapsed = 0;
-            let intervalId = null;
+            const elapsedMsInput = document.getElementById('elapsedMs');
+            const isFinishedInput = document.getElementById('isFinished');
+            const serialState = document.getElementById('serialState');
+            const submitRunBtn = document.getElementById('submitRunBtn');
 
             function formatTime(ms) {
                 const totalSeconds = Math.floor(ms / 1000);
@@ -95,49 +104,31 @@
                 return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
             }
 
-            function update() {
-                const now = Date.now();
-                elapsed = now - startTime;
-                display.textContent = formatTime(elapsed);
+            async function refreshStopwatch() {
+                try {
+                    const response = await fetch('/Home/StopwatchState', { cache: 'no-store' });
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+                    const ms = Number(data.elapsedMs ?? 0);
+
+                    display.textContent = formatTime(ms);
+                    elapsedMsInput.value = ms;
+                    isFinishedInput.value = String(Boolean(data.isFinished));
+
+                    serialState.textContent = data.isRunning
+                        ? 'Running (Serial: Game Started!)'
+                        : `Idle${data.latestLine ? ` • Last: ${data.latestLine}` : ''}`;
+
+                    submitRunBtn.disabled = data.isRunning || ms <= 0;
+                } catch {
+                    serialState.textContent = 'Serial unavailable';
+                    submitRunBtn.disabled = true;
+                }
             }
 
-            startStopBtn.addEventListener('click', () => {
-                if (!running) {
-                    // start
-                    running = true;
-                    startStopBtn.textContent = 'Stop';
-                    startTime = Date.now() - elapsed;
-                    intervalId = setInterval(update, 10);
-                } else {
-                    // stop
-                    running = false;
-                    startStopBtn.textContent = 'Start';
-                    clearInterval(intervalId);
-                    update();
-                }
-            });
-
-            document.getElementById('endRunBtn').addEventListener('click', () => {
-                // prompt for player name then submit
-                const name = prompt('Enter your player name', document.getElementById('playerName').value) || 'Anonymous';
-                document.getElementById('playerName').value = name;
-                // capture current elapsed (if running, compute; else use elapsed)
-                let currentElapsed = elapsed;
-                if (running) {
-                    currentElapsed = Date.now() - startTime;
-                }
-                document.getElementById('elapsedMs').value = currentElapsed;
-                // submit form
-                document.getElementById('submitForm').submit();
-            });
-
-            resetBtn.addEventListener('click', () => {
-                running = false;
-                clearInterval(intervalId);
-                elapsed = 0;
-                display.textContent = '00:00.00';
-                startStopBtn.textContent = 'Start';
-            });
+            setInterval(refreshStopwatch, 100);
+            refreshStopwatch();
         })();
     </script>
 }

@@ -39,8 +39,10 @@ namespace BlockoHolicsWeb.Controllers
             return View(playersModel);
         }
 
+        [HttpGet]
         public IActionResult Privacy() => View();
 
+        [HttpGet]
         public IActionResult Contacts() => View();
 
         [HttpGet]
@@ -66,32 +68,48 @@ namespace BlockoHolicsWeb.Controllers
             return View(playersModel);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult SubmitRun(string playerName, long elapsedMs)
-        {
-            if (string.IsNullOrWhiteSpace(playerName)) playerName = "Anonymous";
-
-            var timeSpan = System.TimeSpan.FromMilliseconds(elapsedMs);
-            string timeStr = string.Format("{0:D2}:{1:D2}.{2:D2}",
-                timeSpan.Minutes,
-                timeSpan.Seconds,
-                timeSpan.Milliseconds / 10);
-
-            var player = new PlayerModel
-            {
-                Name = playerName,
-                ElapsedMs = elapsedMs,
-                Time = timeStr
-            };
-
-
-            return RedirectToAction("Leaderboard");
-        }
-
         public IActionResult Play()
         {
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult StopwatchState()
+        {
+            var elapsed = _timer.LastStoppedElapsed ?? _timer.Elapsed;
+            var latestLine = _timer.LatestLine ?? string.Empty;
+
+            return Json(new
+            {
+                elapsedMs = (long)elapsed.TotalMilliseconds,
+                latestLine,
+                isRunning = _timer.IsRunning,
+                isFinished = latestLine.Equals("You Win!", StringComparison.OrdinalIgnoreCase)
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitRun(string playerName, long elapsedMs, bool isFinished)
+        {
+            if (string.IsNullOrWhiteSpace(playerName))
+            {
+                playerName = "Anonymous";
+            }
+
+            if (elapsedMs <= 0)
+            {
+                return RedirectToAction(nameof(Play));
+            }
+
+            await _dbService.WritePlayer(new Player
+            {
+                Name = playerName.Trim(),
+                ElapsedSeconds = (int)Math.Max(1, Math.Round(elapsedMs / 1000.0)),
+                IsFinished = isFinished
+            });
+
+            return RedirectToAction(nameof(Leaderboard));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
