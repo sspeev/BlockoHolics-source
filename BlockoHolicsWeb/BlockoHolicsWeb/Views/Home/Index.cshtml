@@ -1,8 +1,262 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "BlockoHolics | Arduino-Powered High-Tech Stacking";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- 
+    BlockoHolics Landing Page - Razor View (.cshtml)
+    Theme: CyberCircuit Industrial (Dark Mode)
+    Primary Color: #00979C (Arduino Blue)
+    Accent Color: #FD8B00 (Electric Orange)
+-->
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+    :root {
+        --arduino-blue: #00979C;
+        --electric-orange: #FD8B00;
+        --industrial-bg: #0c0f0f;
+    }
+
+    body {
+        background-color: var(--industrial-bg);
+        color: #edeeed;
+        font-family: 'Space Grotesk', sans-serif;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    /* Scroll-Driven Animation Utilities */
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease-out;
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Glassmorphism Effect */
+    .glass-panel {
+        background: rgba(23, 26, 26, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(127, 238, 243, 0.1);
+        border-radius: 8px;
+    }
+
+    /* Hero Glow */
+    .glow-text {
+        text-shadow: 0 0 20px rgba(0, 151, 156, 0.6);
+    }
+</style>
+
+<div class="min-h-screen flex flex-col">
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-8 flex flex-col items-center text-center">
+        <div class="absolute inset-0 -z-10 opacity-20" style="background-image: url('{{DATA:IMAGE:IMAGE_6}}'); background-size: cover; background-position: center;"></div>
+
+        <h3 class="uppercase tracking-[0.3em] text-sm text-[var(--arduino-blue)] mb-4 font-bold">Arduino Powered Hardware Experience</h3>
+        <h1 class="text-7xl md:text-9xl font-black tracking-tighter glow-text mb-6">BLOCKO<span class="text-[var(--arduino-blue)]">HOLICS</span></h1>
+        <p class="max-w-2xl text-lg text-gray-400 mb-10 leading-relaxed">
+            The ultimate industrial-scale stacking challenge. Engineered for precision, built for performance. 
+            32 columns of high-speed technical intensity.
+        </p>
+
+        <div class="flex gap-4">
+            <a href="/Home/Play" class="bg-[var(--arduino-blue)] text-black px-8 py-4 font-bold uppercase tracking-widest hover:bg-white transition-colors duration-300 inline-block">
+                Start Stacking
+            </a>
+            
+        </div>
+    </section>
+
+    
+
+    <!-- Tech Specs Grid -->
+    <section class="px-8 py-20 bg-black/40">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold uppercase tracking-tighter mb-16">Technical <span class="text-[var(--arduino-blue)]">Specifications</span></h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-1">
+                <div class="p-8 border-l-2 border-[var(--electric-orange)] reveal">
+                    <div class="text-[var(--arduino-blue)] mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    </div>
+                    <h4 class="font-bold uppercase tracking-widest mb-4">32-Column Grid</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Massive visual playground across 4 MAX7219 matrices. High-density pixel tracking.</p>
+                </div>
+
+                <div class="p-8 border-l-2 border-[var(--arduino-blue)]/30 reveal" style="transition-delay: 0.1s">
+                    <div class="text-[var(--arduino-blue)] mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <h4 class="font-bold uppercase tracking-widest mb-4">Difficulty Scaling</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Adaptive speed algorithms. The higher you stack, the faster the refresh rate.</p>
+                </div>
+
+                <div class="p-8 border-l-2 border-[var(--arduino-blue)]/30 reveal" style="transition-delay: 0.2s">
+                    <div class="text-[var(--arduino-blue)] mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <h4 class="font-bold uppercase tracking-widest mb-4">16x2 Status HUD</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Real-time telemetry display. Track your layer, score, and hardware status.</p>
+                </div>
+
+                <div class="p-8 border-l-2 border-[var(--arduino-blue)]/30 reveal" style="transition-delay: 0.3s">
+                    <div class="text-[var(--arduino-blue)] mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+                    </div>
+                    <h4 class="font-bold uppercase tracking-widest mb-4">Single-Key Input</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Zero-latency push-button interface. Pure mechanical feedback for satisfaction.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section class="px-8 py-32 max-w-7xl mx-auto w-full">
+        <div class="text-center mb-20 reveal">
+            <h2 class="text-4xl font-black uppercase tracking-tighter mb-4">I/O <span class="text-[var(--arduino-blue)]">Architecture</span></h2>
+            <p class="text-gray-500 uppercase tracking-widest text-xs">Reference pinout for hardware assembly</p>
+        </div>
+
+        <div class="glass-panel overflow-hidden reveal">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400">
+                        <th class="px-8 py-6">Component</th>
+                        <th class="px-8 py-6">Pin Label</th>
+                        <th class="px-8 py-6">Arduino Pin</th>
+                        <th class="px-8 py-6">Function</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td class="px-8 py-6 font-bold">MAX7219 Matrix</td>
+                        <td class="px-8 py-6 text-gray-500">DIN</td>
+                        <td class="px-8 py-6 text-[var(--arduino-blue)]">D6</td>
+                        <td class="px-8 py-6 text-gray-400">Data Input Serial</td>
+                    </tr>
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td class="px-8 py-6 font-bold">MAX7219 Matrix</td>
+                        <td class="px-8 py-6 text-gray-500">CLK</td>
+                        <td class="px-8 py-6 text-[var(--arduino-blue)]">D5</td>
+                        <td class="px-8 py-6 text-gray-400">Serial Clock</td>
+                    </tr>
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td class="px-8 py-6 font-bold">MAX7219 Matrix</td>
+                        <td class="px-8 py-6 text-gray-500">CS</td>
+                        <td class="px-8 py-6 text-[var(--arduino-blue)]">D3</td>
+                        <td class="px-8 py-6 text-gray-400">Chip Select</td>
+                    </tr>
+                   
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="px-8 py-6 font-bold">Main Trigger</td>
+                        <td class="px-8 py-6 text-gray-500">Switch</td>
+                        <td class="px-8 py-6 text-[var(--arduino-blue)]">D11</td>
+                        <td class="px-8 py-6 text-gray-400">Input Pullup</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Leaderboard / Hall of Fame -->
+    <section class="px-8 py-32 bg-black/60 relative overflow-hidden">
+        <div class="absolute right-0 bottom-0 text-[15rem] font-black text-white/[0.02] leading-none select-none">STACK</div>
+
+        <div class="max-w-4xl mx-auto relative z-10">
+            <div class="flex items-end justify-between mb-16 reveal">
+                <div>
+                    <div class="flex items-center gap-4 mb-2">
+                        <div class="w-12 h-1 bg-[var(--electric-orange)]"></div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter">Global <span class="text-[var(--arduino-blue)]">Hall of Fame</span></h2>
+                    </div>
+                </div>
+                <div class="hidden md:flex gap-1 items-end">
+                    <div class="w-4 bg-white/5 h-8"></div>
+                    <div class="w-4 bg-[var(--arduino-blue)]/40 h-16"></div>
+                    <div class="w-4 bg-[var(--arduino-blue)] h-24"></div>
+                    <div class="w-4 bg-white/10 h-12"></div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Leaderboard Row -->
+                <div class="glass-panel p-6 flex items-center justify-between border-l-4 border-[var(--arduino-blue)] reveal" style="transition-delay: 0.1s">
+                    <div class="flex items-center gap-8">
+                        <span class="text-2xl font-black italic opacity-20">01</span>
+                        <div>
+                            <div class="font-bold tracking-widest uppercase">V_CyberPunk_88</div>
+                            <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Hardware ID: ARD-9921</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-[var(--arduino-blue)]">14.82s</div>
+                        <div class="text-[10px] uppercase font-bold tracking-widest text-gray-500">16 Layers Perfect</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 flex items-center justify-between border-l-4 border-white/5 reveal" style="transition-delay: 0.2s">
+                    <div class="flex items-center gap-8">
+                        <span class="text-2xl font-black italic opacity-20">02</span>
+                        <div>
+                            <div class="font-bold tracking-widest uppercase">Kinetic_Ghost</div>
+                            <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Hardware ID: ARD-1024</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-gray-300">16.45s</div>
+                        <div class="text-[10px] uppercase font-bold tracking-widest text-gray-500">16 Layers Perfect</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 flex items-center justify-between border-l-4 border-white/5 reveal" style="transition-delay: 0.3s">
+                    <div class="flex items-center gap-8">
+                        <span class="text-2xl font-black italic opacity-20">03</span>
+                        <div>
+                            <div class="font-bold tracking-widest uppercase">Null_Ptr_Error</div>
+                            <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Hardware ID: ARD-5510</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-gray-300">18.12s</div>
+                        <div class="text-[10px] uppercase font-bold tracking-widest text-gray-500">16 Layers Perfect</div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/Home/Leaderboard" class="w-full mt-12 py-6 border border-white/10 text-xs uppercase font-bold tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 inline-block text-center">
+                Enter Competition Protocol →
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto px-8 py-12 border-t border-white/5 bg-black">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-[var(--arduino-blue)] font-black text-xl tracking-tighter">KINETIC LABORATORY</div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-widest">© 2024 Kinetic Laboratory. All Rights Reserved.</div>
+            <div class="flex gap-8 text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                <a href="#" class="hover:text-[var(--arduino-blue)] transition-colors">Privacy</a>
+                <a href="#" class="hover:text-[var(--arduino-blue)] transition-colors">Terms</a>
+                <a href="#" class="hover:text-[var(--arduino-blue)] transition-colors">Contact</a>
+            </div>
+        </div>
+    </footer>
 </div>
+
+<script>
+    // Simple intersection observer for scroll-driven reveals
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>

@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "Play - BlockoHolics";
+}
+
+<style>
+    :root {
+        --arduino-blue: #00979C;
+        --electric-orange: #FD8B00;
+    }
+
+    /* 1. Target the 'Main' and 'Container' classes ASP.NET uses by default */
+    html, body, main, .container, .container-fluid, .pb-3 {
+        background-color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        border: none !important;
+    }
+
+    /* 2. Kill the header/nav/footer if they are still hiding in the layout */
+    header, nav, footer, .border-top, .border-bottom {
+        display: none !important;
+    }
+
+    /* 3. Your specific glass panel */
+    .glass-panel {
+        background: rgba(23, 26, 26, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(127, 238, 243, 0.1);
+        border-radius: 8px;
+    }
+
+    /* 4. The wrapper that holds your timer */
+    .play-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background-color: #000;
+        margin: 0 !important;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+</style>
+
+<div class="play-wrapper bg-black text-white">
+    <div class="w-full max-w-2xl glass-panel p-8 text-center">
+        <div class="mb-6 flex items-center justify-between">
+            <a class="text-sm text-gray-300 hover:text-white" href="/">← Back to Home</a>
+            <div class="text-xs uppercase text-gray-400 tracking-widest">Live Play Mode</div>
+        </div>
+
+        <h1 class="text-6xl font-black mb-6 text-[var(--arduino-blue)]">Timer</h1>
+
+        <div class="text-7xl font-mono font-bold mb-6" id="timerDisplay">00:00.00</div>
+
+        <div class="flex items-center justify-center gap-4">
+            <button id="startStopBtn" class="bg-[var(--arduino-blue)] text-black px-6 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors duration-200">Start</button>
+            <button id="resetBtn" class="border border-white/20 text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white/5 transition-colors duration-200">Reset</button>
+        <form id="submitForm" method="post" action="/Home/SubmitRun">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="elapsedMs" id="elapsedMs" value="0" />
+            <input type="hidden" name="playerName" id="playerName" value="Anonymous" />
+            <button id="endRunBtn" type="button" class="border border-white/10 text-xs uppercase font-bold tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 inline-block px-6 py-3">End Run</button>
+        </form>
+        </div>
+
+        <p class="mt-6 text-sm text-gray-400">Use the Start button to begin timing your run. Press End Run to submit or view leaderboard.</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const display = document.getElementById('timerDisplay');
+            const startStopBtn = document.getElementById('startStopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            let running = false;
+            let startTime = 0;
+            let elapsed = 0;
+            let intervalId = null;
+
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                const hundredths = Math.floor((ms % 1000) / 10);
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
+            }
+
+            function update() {
+                const now = Date.now();
+                elapsed = now - startTime;
+                display.textContent = formatTime(elapsed);
+            }
+
+            startStopBtn.addEventListener('click', () => {
+                if (!running) {
+                    // start
+                    running = true;
+                    startStopBtn.textContent = 'Stop';
+                    startTime = Date.now() - elapsed;
+                    intervalId = setInterval(update, 10);
+                } else {
+                    // stop
+                    running = false;
+                    startStopBtn.textContent = 'Start';
+                    clearInterval(intervalId);
+                    update();
+                }
+            });
+
+            document.getElementById('endRunBtn').addEventListener('click', () => {
+                // prompt for player name then submit
+                const name = prompt('Enter your player name', document.getElementById('playerName').value) || 'Anonymous';
+                document.getElementById('playerName').value = name;
+                // capture current elapsed (if running, compute; else use elapsed)
+                let currentElapsed = elapsed;
+                if (running) {
+                    currentElapsed = Date.now() - startTime;
+                }
+                document.getElementById('elapsedMs').value = currentElapsed;
+                // submit form
+                document.getElementById('submitForm').submit();
+            });
+
+            resetBtn.addEventListener('click', () => {
+                running = false;
+                clearInterval(intervalId);
+                elapsed = 0;
+                display.textContent = '00:00.00';
+                startStopBtn.textContent = 'Start';
+            });
+        })();
+    </script>
+}
