@@ -7,16 +7,18 @@ namespace BlockoHolicsWeb.Services;
 public class DbService(BlockoHolicsDbContext context) : IDbService
 {
     private readonly BlockoHolicsDbContext _context = context;
-    public async Task<IEnumerable<Player>> GetPlayers()
+    public async Task<IList<Player>> GetPlayers()
     {
         return await _context.Players
             .AsNoTracking()
+            .Where(p => p.ElapsedSeconds > 0)
             .Select(p => new Player
             {
                 Name = p.Name,
-                ElapsedSeconds = p.ElapsedSeconds
+                ElapsedSeconds = p.ElapsedSeconds,
+                IsFinished = p.IsFinished
             })
-            .OrderByDescending(p => p.ElapsedSeconds)
+            .OrderBy(p => p.ElapsedSeconds)
             .ToListAsync();
     }
 

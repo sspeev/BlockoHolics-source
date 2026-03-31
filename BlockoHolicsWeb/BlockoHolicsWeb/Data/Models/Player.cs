@@ -11,9 +11,12 @@ namespace BlockoHolicsWeb.Data.Models
         public int Id { get; set; }
 
         [MaxLength(MaxPlayerName)]
-        public string? Name { get; set; } = "Anonymous";
+        public string Name { get; set; } = "Anonymous";
 
         [Required]
         public int ElapsedSeconds { get; set; }
+
+        [Required]
+        public bool IsFinished { get; set; }
     }
 }

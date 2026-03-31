@@ -1,3 +1,4 @@
+using BlockoHolicsWeb.Data.Models;
 using BlockoHolicsWeb.Models;
 using BlockoHolicsWeb.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,25 +8,62 @@ using Timer = BlockoHolicsWeb.Services.Timer;
 
 namespace BlockoHolicsWeb.Controllers
 {
-    public class HomeController(Timer timer) : Controller
+    public class HomeController(Timer timer
+        , IDbService dbService) : Controller
     {
         private readonly Timer _timer = timer;
+        private readonly IDbService _dbService = dbService;
 
-        public IActionResult Index()
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            _timer.Send(PortStartMessage);
+            //_timer.Send(PortStartMessage);
 
-            return View();
+            IList<Player> players = await _dbService.GetPlayers();
+            IList<PlayerModel> playersModel = [.. players
+                .Select((p, index) =>
+                {
+                    var elapsedMs = (long)p.ElapsedSeconds * 1000;
+                    var timeSpan = TimeSpan.FromMilliseconds(elapsedMs);
+
+                    return new PlayerModel
+                    {
+                        Rank = index + 1,
+                        Name = p.Name,
+                        ElapsedMs = elapsedMs,
+                        Time = $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}.{timeSpan.Milliseconds / 10:D2}",
+                        IsFinished = p.IsFinished
+                    };
+                })];
+
+            return View(playersModel);
         }
 
         public IActionResult Privacy() => View();
 
-        public IActionResult About() => View();
+        public IActionResult Contacts() => View();
 
-        public IActionResult Leaderboard()
+        [HttpGet]
+        public async Task<IActionResult> Leaderboard()
         {
-            var players = LeaderboardStore.GetAll();
-            return View(players);
+            IList<Player> players = await _dbService.GetPlayers();
+            IList<PlayerModel> playersModel = [.. players
+                .Select((p, index) =>
+                {
+                    var elapsedMs = (long)p.ElapsedSeconds * 1000;
+                    var timeSpan = TimeSpan.FromMilliseconds(elapsedMs);
+
+                    return new PlayerModel
+                    {
+                        Rank = index + 1,
+                        Name = p.Name,
+                        ElapsedMs = elapsedMs,
+                        Time = $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}.{timeSpan.Milliseconds / 10:D2}",
+                        IsFinished = p.IsFinished
+                    };
+                })];
+
+            return View(playersModel);
         }
 
         [HttpPost]
@@ -40,14 +78,13 @@ namespace BlockoHolicsWeb.Controllers
                 timeSpan.Seconds,
                 timeSpan.Milliseconds / 10);
 
-            var player = new Player
+            var player = new PlayerModel
             {
                 Name = playerName,
                 ElapsedMs = elapsedMs,
                 Time = timeStr
             };
 
-            LeaderboardStore.Add(player);
 
             return RedirectToAction("Leaderboard");
         }

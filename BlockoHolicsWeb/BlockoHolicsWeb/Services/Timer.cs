@@ -105,28 +105,14 @@ public class Timer(
                     _logger.LogInformation("Stopwatch started.");
                 }
 
-                if (line.Equals("Game Over!", StringComparison.OrdinalIgnoreCase)
-                    || line.Equals("You Win!", StringComparison.OrdinalIgnoreCase))
+                if (line.Equals("Game Over!", StringComparison.OrdinalIgnoreCase))
                 {
-                    _stopwatch.Stop();
-
-                    lock (_sync)
-                    {
-                        _lastStoppedElapsed = _stopwatch.Elapsed;
-                        _lastStoppedAtUtc = DateTimeOffset.UtcNow;
-                    }
-
-                    await using var scope = _scopeFactory.CreateAsyncScope();
-                    var dbService = scope.ServiceProvider.GetRequiredService<IDbService>();
-
-                    await dbService.WritePlayer(new Player
-                    {
-                        ElapsedSeconds = (int)_stopwatch.Elapsed.TotalSeconds
-                    });
-
-                    _logger.LogInformation("Stopwatch stopped at {Elapsed} ({StoppedAtUtc:u}).", _stopwatch.Elapsed, _lastStoppedAtUtc);
+                    await StopAndSave(false);
                 }
-
+                if (line.Equals("You Win!", StringComparison.OrdinalIgnoreCase))
+                {
+                    await StopAndSave(true);
+                }
                 _logger.LogInformation("Serial: {Line}", line);
             }
             catch (TimeoutException)
@@ -150,6 +136,28 @@ public class Timer(
                 await Task.Delay(500, stoppingToken);
             }
         }
+    }
+
+    private async Task StopAndSave(bool isFinished)
+    {
+        _stopwatch.Stop();
+
+        lock (_sync)
+        {
+            _lastStoppedElapsed = _stopwatch.Elapsed;
+            _lastStoppedAtUtc = DateTimeOffset.UtcNow;
+        }
+
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var dbService = scope.ServiceProvider.GetRequiredService<IDbService>();
+
+        await dbService.WritePlayer(new Player
+        {
+            ElapsedSeconds = (int)_stopwatch.Elapsed.TotalSeconds,
+            IsFinished = isFinished
+        });
+
+        _logger.LogInformation("Stopwatch stopped at {Elapsed} ({StoppedAtUtc:u}).", _stopwatch.Elapsed, _lastStoppedAtUtc);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)

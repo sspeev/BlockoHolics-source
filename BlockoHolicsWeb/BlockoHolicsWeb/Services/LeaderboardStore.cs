@@ -1,15 +1,13 @@
-using Blockoholics.Models;
-using System.Collections.Generic;
-using System.Linq;
+using BlockoHolicsWeb.Models;
 
 namespace BlockoHolicsWeb.Services
 {
     public static class LeaderboardStore
     {
-        private static readonly List<Player> _players = new List<Player>();
+        private static readonly List<PlayerModel> _players = new List<PlayerModel>();
         private static readonly object _lock = new object();
 
-        public static IReadOnlyList<Player> GetAll()
+        public static IReadOnlyList<PlayerModel> GetAll()
         {
             lock (_lock)
             {
@@ -18,7 +16,7 @@ namespace BlockoHolicsWeb.Services
             }
         }
 
-        public static void Add(Player p)
+        public static void Add(PlayerModel p)
         {
             lock (_lock)
             {
