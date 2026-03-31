@@ -8,7 +8,7 @@ The project has been simplified to remove the LCD and Audio components. The prim
 
 - **MAIN PIPELINE**: `sketchMain.ino`
 - **SOURCE ROOT**: `src/`
-  - **CORE**: `Common.h`
+  - **CORE**: `Common.h`, `Messages.h`
   - **DISPLAY**: `DisplayHandler` (LED Matrix only)
   - **GAME**: `GameLogic`
 

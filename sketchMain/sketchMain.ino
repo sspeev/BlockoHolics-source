@@ -2,7 +2,9 @@
 #include "src/display/DisplayHandler.h"
 
 void setup() {
-  
+  // Initialize Serial for debugging if needed
+  Serial.begin(9600);
+
   // Initialize display components (Matrices)
   displayHandler.init();
 

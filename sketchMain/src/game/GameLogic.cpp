@@ -1,9 +1,11 @@
 #include "GameLogic.h"
+#include "../core/Messages.h"
 
 GameLogic game;
 
 void GameLogic::init() {
   pinMode(buttonPin, INPUT_PULLUP);
+  Serial.println(MSG_GAME_START);
   
   // GameState init
   currentLayerCount = 0;
@@ -62,6 +64,7 @@ void GameLogic::update() {
 }
 
 void GameLogic::reset() {
+  Serial.println(MSG_GAME_RESET);
   gameOver = false;
   gameWon = false;
   currentLayerCount = 0;
@@ -110,6 +113,7 @@ void GameLogic::placeBlock() {
     displayHandler.clearMovingBlock(currentLayerCount, currentPos, currentWidth);
     gameOver = true;
     gameWon = false;
+    Serial.println(MSG_GAME_OVER);
     return;
   }
 
@@ -129,6 +133,7 @@ void GameLogic::placeBlock() {
     displayHandler.updatePlacedBlockDisplay(currentLayerCount - 1, layers);
     gameOver = true;
     gameWon = true;
+    Serial.println(MSG_GAME_WIN);
     return;
   }
 
