@@ -4,14 +4,16 @@ using static BlockoHolicsWeb.Constants.DataConstants.PlayerConstants;
 
 namespace BlockoHolicsWeb.Data.Models
 {
-    [Keyless]
     [Comment("Represents a player in the game.")]
     public class Player
     {
+        [Key]
+        public int Id { get; set; }
+
         [MaxLength(MaxPlayerName)]
-        public string? Name { get; set; }
+        public string? Name { get; set; } = "Anonymous";
 
         [Required]
-        public DateTime Time { get; set; }
+        public int ElapsedSeconds { get; set; }
     }
 }
