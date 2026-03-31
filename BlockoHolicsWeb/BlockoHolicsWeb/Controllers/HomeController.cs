@@ -1,5 +1,6 @@
 using BlockoHolicsWeb.Models;
 using Blockoholics.Models;
+using BlockoHolicsWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -24,16 +25,37 @@ namespace BlockoHolicsWeb.Controllers
 
         public IActionResult Leaderboard()
         {
-            // Temporary demo data - replace with DB or service as needed
-            var players = new List<Player>
+            var players = LeaderboardStore.GetAll();
+            return View(players);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SubmitRun(string playerName, long elapsedMs)
+        {
+            if (string.IsNullOrWhiteSpace(playerName)) playerName = "Anonymous";
+
+            var timeSpan = System.TimeSpan.FromMilliseconds(elapsedMs);
+            string timeStr = string.Format("{0:D2}:{1:D2}.{2:D2}",
+                timeSpan.Minutes,
+                timeSpan.Seconds,
+                timeSpan.Milliseconds / 10);
+
+            var player = new Player
             {
-                new Player { Rank = 1, Name = "CircuitMaster_X", Time = "00:45.32" },
-                new Player { Rank = 2, Name = "ByteRunner", Time = "00:48.10" },
-                new Player { Rank = 3, Name = "GridGlider", Time = "00:50.21" },
-                new Player { Rank = 4, Name = "PixelPusher", Time = "00:55.06" },
+                Name = playerName,
+                ElapsedMs = elapsedMs,
+                Time = timeStr
             };
 
-            return View(players);
+            LeaderboardStore.Add(player);
+
+            return RedirectToAction("Leaderboard");
+        }
+
+        public IActionResult Play()
+        {
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
