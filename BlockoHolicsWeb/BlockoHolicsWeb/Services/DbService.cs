@@ -30,4 +30,13 @@ public class DbService(BlockoHolicsDbContext context) : IDbService
         await _context.Players.AddAsync(player);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<bool> IsRecentRunExists(int elapsedSeconds, int windowSeconds = 2, string playerName = "Anonymous")
+    {
+        return await _context.Players
+            .Where(p => Math.Abs(p.ElapsedSeconds - elapsedSeconds) <= windowSeconds)
+            .Where(p => p.Name == playerName)
+            .OrderByDescending(p => p.Id)
+            .FirstOrDefaultAsync() != null;
+    }
 }

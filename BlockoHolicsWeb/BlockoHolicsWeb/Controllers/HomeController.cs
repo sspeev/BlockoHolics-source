@@ -3,16 +3,17 @@ using BlockoHolicsWeb.Data.Models;
 using BlockoHolicsWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using static BlockoHolicsWeb.Constants.WebConstants.PortConstants;
 using Timer = BlockoHolicsWeb.Services.Timer;
 
 namespace BlockoHolicsWeb.Controllers
 {
-    public class HomeController(Timer timer
-        , IDbService dbService) : Controller
+    public class HomeController(ITimerService timer
+        , IDbService dbService
+        , ILogger<HomeController> _logger) : Controller
     {
-        private readonly Timer _timer = timer;
+        private readonly ITimerService _timer = timer;
         private readonly IDbService _dbService = dbService;
+        private readonly ILogger<HomeController> _logger = _logger;
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -93,14 +94,32 @@ namespace BlockoHolicsWeb.Controllers
         public async Task<IActionResult> SubmitRun(SubmitRunRequest request)
         {
             if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var elapsedSeconds = (int)Math.Round(request.ElapsedMs / 1000.0);
+            
+            // Sanity checks
+            if (elapsedSeconds < 1 || elapsedSeconds > 3600) // 1 sec to 1 hour max
+                return BadRequest("Invalid time");
+
+            // Check if time matches serial stopwatch (within 1 second tolerance)
+            var serverTime = _timer.LastStoppedElapsed;
+            if (serverTime.HasValue && 
+                Math.Abs(serverTime.Value.TotalSeconds - elapsedSeconds) > 1)
             {
-                return RedirectToAction(nameof(Play));
+                _logger.LogWarning("Potential time tampering: {ClientTime}s vs {ServerTime}s", 
+                    elapsedSeconds, serverTime.Value.TotalSeconds);
+                return BadRequest("Time mismatch with server");
             }
+
+            var isDuplicate = await _dbService.IsRecentRunExists((int)(elapsedSeconds), 2, request.PlayerName);
+            if (isDuplicate)
+                return BadRequest("Run already submitted");
 
             await _dbService.WritePlayer(new Player
             {
                 Name = request.PlayerName.Trim(),
-                ElapsedSeconds = (int)Math.Round(request.ElapsedMs / 1000.0),
+                ElapsedSeconds = elapsedSeconds,
                 IsFinished = request.IsFinished
             });
 

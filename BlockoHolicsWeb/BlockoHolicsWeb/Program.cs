@@ -24,10 +24,12 @@ builder.Services.AddSingleton(_ =>
         WriteTimeout = 1000
     };
 });
-builder.Services.AddSingleton<Timer>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<Timer>());
+builder.Services.AddSingleton<Timer>(); // Register Timer as singleton
+builder.Services.AddSingleton<ITimerService>(sp => sp.GetRequiredService<Timer>()); // Register interface
+builder.Services.AddHostedService<Timer>(sp => sp.GetRequiredService<Timer>()); // Start background service
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

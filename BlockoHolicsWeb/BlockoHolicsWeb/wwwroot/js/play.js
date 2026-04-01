@@ -36,6 +36,6 @@
         }
     }
 
-    setInterval(refreshStopwatch, 100);
+    setInterval(refreshStopwatch, 200);
     refreshStopwatch();
 })();
