@@ -3,6 +3,7 @@ using BlockoHolicsWeb.Services;
 using Timer = BlockoHolicsWeb.Services.Timer;
 using Microsoft.EntityFrameworkCore;
 using System.IO.Ports;
+using BlockoHolicsWeb.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,6 @@ builder.Services.AddDbContext<BlockoHolicsDbContext>(options =>
 );
 
 builder.Services.AddScoped<IDbService, DbService>();
-
 builder.Services.AddSingleton(_ =>
 {
     return new SerialPort("COM3", 9600)
@@ -24,14 +24,13 @@ builder.Services.AddSingleton(_ =>
         WriteTimeout = 1000
     };
 });
-
 builder.Services.AddSingleton<Timer>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<Timer>());
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();

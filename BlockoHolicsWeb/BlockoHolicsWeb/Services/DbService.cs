@@ -1,4 +1,5 @@
-﻿using BlockoHolicsWeb.Data;
+﻿using BlockoHolicsWeb.Contracts;
+using BlockoHolicsWeb.Data;
 using BlockoHolicsWeb.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,4 +31,3 @@ public class DbService(BlockoHolicsDbContext context) : IDbService
         await _context.SaveChangesAsync();
     }
 }
-

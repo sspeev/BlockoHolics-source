@@ -2,133 +2,45 @@
     ViewData["Title"] = "Play - BlockoHolics";
 }
 
-<style>
-    :root {
-        --arduino-blue: #00979C;
-        --electric-orange: #FD8B00;
-    }
+<div class="play-page">
+    <div class="play-wrapper bg-black text-white">
+        <div class="w-full max-w-2xl glass-panel p-8 text-center">
+            <div class="mb-6 flex items-center justify-between">
+                <a class="text-sm text-gray-300 hover:text-white" href="/">← Back to Home</a>
+                <div class="text-xs uppercase text-gray-400 tracking-widest">Live Play Mode</div>
+            </div>
 
-    /* 1. Target the 'Main' and 'Container' classes ASP.NET uses by default */
-    html, body, main, .container, .container-fluid, .pb-3 {
-        background-color: #000 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        border: none !important;
-    }
+            <h1 class="text-6xl font-black mb-6 text-[var(--arduino-blue)]">Timer</h1>
 
-    /* 2. Kill the header/nav/footer if they are still hiding in the layout */
-    header, nav, footer, .border-top, .border-bottom {
-        display: none !important;
-    }
+            <div class="text-7xl font-mono font-bold mb-3" id="timerDisplay">00:00.00</div>
+            <div id="serialState" class="text-xs uppercase tracking-widest text-gray-400 mb-6">Waiting for serial...</div>
 
-    /* 3. Your specific glass panel */
-    .glass-panel {
-        background: rgba(23, 26, 26, 0.6);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(127, 238, 243, 0.1);
-        border-radius: 8px;
-    }
+            <form id="submitForm" method="post" asp-controller="Home" asp-action="SubmitRun">
+                @Html.AntiForgeryToken()
 
-    /* 4. The wrapper that holds your timer */
-    .play-wrapper {
-        min-height: 100vh;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-        background-color: #000;
-        margin: 0 !important;
-    }
+                <input type="text"
+                       name="playerName"
+                       value="Anonymous"
+                       maxlength="100"
+                       class="w-full px-4 py-3 bg-black/40 border border-white/20 rounded text-white"
+                       placeholder="Enter player name" />
 
-    * {
-        box-sizing: border-box;
-    }
-</style>
+                <input type="hidden" name="elapsedMs" id="elapsedMs" value="0" />
+                <input type="hidden" name="isFinished" id="isFinished" value="false" />
 
-<div class="play-wrapper bg-black text-white">
-    <div class="w-full max-w-2xl glass-panel p-8 text-center">
-        <div class="mb-6 flex items-center justify-between">
-            <a class="text-sm text-gray-300 hover:text-white" href="/">← Back to Home</a>
-            <div class="text-xs uppercase text-gray-400 tracking-widest">Live Play Mode</div>
+                <button id="submitRunBtn"
+                        type="submit"
+                        disabled
+                        class="w-full border border-white/20 text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Submit Time
+                </button>
+            </form>
+
+            <p class="mt-6 text-sm text-gray-400">Timer starts on "Game Started!" message. Enter your name and submit when finished.</p>
         </div>
-
-        <h1 class="text-6xl font-black mb-6 text-[var(--arduino-blue)]">Timer</h1>
-
-        <div class="text-7xl font-mono font-bold mb-3" id="timerDisplay">00:00.00</div>
-        <div id="serialState" class="text-xs uppercase tracking-widest text-gray-400 mb-6">Waiting for serial...</div>
-
-        <form id="submitForm" method="post" asp-controller="Home" asp-action="SubmitRun" class="max-w-md mx-auto space-y-4">
-            @Html.AntiForgeryToken()
-
-            <input type="text"
-                   id="playerName"
-                   name="playerName"
-                   value="Anonymous"
-                   maxlength="100"
-                   class="w-full px-4 py-3 bg-black/40 border border-white/20 rounded text-white"
-                   placeholder="Enter player name" />
-
-            <input type="hidden" name="elapsedMs" id="elapsedMs" value="0" />
-            <input type="hidden" name="isFinished" id="isFinished" value="false" />
-
-            <button id="submitRunBtn"
-                    type="submit"
-                    disabled
-                    class="w-full border border-white/20 text-white px-6 py-3 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                Submit Time
-            </button>
-        </form>
-
-        <p class="mt-6 text-sm text-gray-400">Use the Start button to begin timing your run. Press End Run to submit or view leaderboard.</p>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        (function () {
-            const display = document.getElementById('timerDisplay');
-            const elapsedMsInput = document.getElementById('elapsedMs');
-            const isFinishedInput = document.getElementById('isFinished');
-            const serialState = document.getElementById('serialState');
-            const submitRunBtn = document.getElementById('submitRunBtn');
-
-            function formatTime(ms) {
-                const totalSeconds = Math.floor(ms / 1000);
-                const minutes = Math.floor(totalSeconds / 60);
-                const seconds = totalSeconds % 60;
-                const hundredths = Math.floor((ms % 1000) / 10);
-                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
-            }
-
-            async function refreshStopwatch() {
-                try {
-                    const response = await fetch('/Home/StopwatchState', { cache: 'no-store' });
-                    if (!response.ok) return;
-
-                    const data = await response.json();
-                    const ms = Number(data.elapsedMs ?? 0);
-
-                    display.textContent = formatTime(ms);
-                    elapsedMsInput.value = ms;
-                    isFinishedInput.value = String(Boolean(data.isFinished));
-
-                    serialState.textContent = data.isRunning
-                        ? 'Running (Serial: Game Started!)'
-                        : `Idle${data.latestLine ? ` • Last: ${data.latestLine}` : ''}`;
-
-                    submitRunBtn.disabled = data.isRunning || ms <= 0;
-                } catch {
-                    serialState.textContent = 'Serial unavailable';
-                    submitRunBtn.disabled = true;
-                }
-            }
-
-            setInterval(refreshStopwatch, 100);
-            refreshStopwatch();
-        })();
-    </script>
+    <script src="~/js/play.js" asp-append-version="true"></script>
 }

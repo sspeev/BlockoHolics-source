@@ -1,81 +1,69 @@
 ﻿using System.Diagnostics;
 using System.IO.Ports;
-using Microsoft.Extensions.DependencyInjection;
-using Player = BlockoHolicsWeb.Data.Models.Player;
+using BlockoHolicsWeb.Contracts;
+using BlockoHolicsWeb.Data.Models;
 
 namespace BlockoHolicsWeb.Services;
 
-public class Timer(
-      SerialPort serialPort
-    , ILogger<Timer> logger
-    , IServiceScopeFactory scopeFactory) : BackgroundService
+/// <summary>
+/// Background service that monitors Arduino serial port for game events.
+/// Tracks elapsed time and persists results to database.
+/// </summary>
+public class Timer : BackgroundService, ITimerService
 {
-    private readonly SerialPort _serialPort = serialPort;
-    private readonly ILogger<Timer> _logger = logger;
-    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private readonly SerialPort _serialPort;
+    private readonly ILogger<Timer> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly Lock _sync = new();
     private readonly Stopwatch _stopwatch = new();
+    private readonly TimerGameEventHandler _eventHandler;
 
     private string? _latestLine;
     private TimeSpan? _lastStoppedElapsed;
     private DateTimeOffset? _lastStoppedAtUtc;
 
-    public string? LatestLine
+    public Timer(SerialPort serialPort, ILogger<Timer> logger, IServiceScopeFactory scopeFactory)
     {
-        get
-        {
-            lock (_sync)
-            {
-                return _latestLine;
-            }
-        }
+        _serialPort = serialPort;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        _eventHandler = new TimerGameEventHandler(
+            _stopwatch,
+            _logger,
+            SaveToDatabase,
+            SetStoppedState);
     }
 
+    // ============ ITimerService Implementation ============
+
+    public string? LatestLine => GetThreadSafe(() => _latestLine);
     public TimeSpan Elapsed => _stopwatch.Elapsed;
-
     public bool IsRunning => _stopwatch.IsRunning;
-
-    public TimeSpan? LastStoppedElapsed
-    {
-        get
-        {
-            lock (_sync)
-            {
-                return _lastStoppedElapsed;
-            }
-        }
-    }
-
-    public DateTimeOffset? LastStoppedAtUtc
-    {
-        get
-        {
-            lock (_sync)
-            {
-                return _lastStoppedAtUtc;
-            }
-        }
-    }
+    public TimeSpan? LastStoppedElapsed => GetThreadSafe(() => _lastStoppedElapsed);
+    public DateTimeOffset? LastStoppedAtUtc => GetThreadSafe(() => _lastStoppedAtUtc);
 
     public void Send(string command)
     {
         try
         {
             if (!_serialPort.IsOpen)
-            {
                 _serialPort.Open();
-            }
 
             _serialPort.WriteLine(command);
+            _logger.LogDebug("Serial sent: {Command}", command);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or InvalidOperationException)
         {
-            _logger.LogWarning(ex, "Unable to send serial command. Port {PortName} is unavailable.", _serialPort.PortName);
+            _logger.LogWarning(ex, "Failed to send command on {Port}", _serialPort.PortName);
         }
     }
 
+    // ============ Background Service Loop ============
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Timer service started");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             if (!TryEnsurePortOpen())
@@ -86,90 +74,73 @@ public class Timer(
 
             try
             {
-                var line = _serialPort.ReadLine().Trim();
+                var line = _serialPort.ReadLine()?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(line))
+                    continue;
 
-                lock (_sync)
-                {
-                    _latestLine = line;
-                }
-
-                if (line.Equals("Game Started!", StringComparison.OrdinalIgnoreCase)
-                    || line.Equals("Game Reset!", StringComparison.OrdinalIgnoreCase))
-                {
-                    _stopwatch.Restart();
-
-                    lock (_sync)
-                    {
-                        _lastStoppedElapsed = null;
-                        _lastStoppedAtUtc = null;
-                    }
-
-                    _logger.LogInformation("Stopwatch started.");
-                }
-
-                if (line.Equals("Game Over!", StringComparison.OrdinalIgnoreCase))
-                {
-                    await StopAndSave(false);
-                }
-                if (line.Equals("You Win!", StringComparison.OrdinalIgnoreCase))
-                {
-                    await StopAndSave(true);
-                }
-                _logger.LogInformation("Serial: {Line}", line);
+                SetThreadSafe(() => _latestLine = line);
+                await _eventHandler.HandleEventAsync(line);
             }
             catch (TimeoutException)
             {
-                // expected when no data is available yet
+                // Expected when no data available
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or InvalidOperationException)
             {
-                _logger.LogError(ex, "Serial port failure on {PortName}. Will retry.", _serialPort.PortName);
-
-                if (_serialPort.IsOpen)
-                {
-                    _serialPort.Close();
-                }
-
+                _logger.LogError(ex, "Serial port error on {Port}. Retrying...", _serialPort.PortName);
+                ClosePort();
                 await Task.Delay(1000, stoppingToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Serial read failed.");
+                _logger.LogError(ex, "Unexpected serial read error");
                 await Task.Delay(500, stoppingToken);
             }
         }
     }
 
-    private async Task StopAndSave(bool isFinished)
+    // ============ Private Helpers ============
+
+    private void SetStoppedState(TimeSpan? elapsed, DateTimeOffset? stoppedAt)
     {
-        _stopwatch.Stop();
-
-        lock (_sync)
+        SetThreadSafe(() =>
         {
-            _lastStoppedElapsed = _stopwatch.Elapsed;
-            _lastStoppedAtUtc = DateTimeOffset.UtcNow;
-        }
-
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        var dbService = scope.ServiceProvider.GetRequiredService<IDbService>();
-
-        await dbService.WritePlayer(new Player
-        {
-            ElapsedSeconds = (int)_stopwatch.Elapsed.TotalSeconds,
-            IsFinished = isFinished
+            _lastStoppedElapsed = elapsed;
+            _lastStoppedAtUtc = stoppedAt;
         });
-
-        _logger.LogInformation("Stopwatch stopped at {Elapsed} ({StoppedAtUtc:u}).", _stopwatch.Elapsed, _lastStoppedAtUtc);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    private async Task SaveToDatabase(TimeSpan elapsed, bool isFinished)
     {
-        if (_serialPort.IsOpen)
+        try
         {
-            _serialPort.Close();
-        }
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var dbService = scope.ServiceProvider.GetRequiredService<IDbService>();
 
-        return base.StopAsync(cancellationToken);
+            await dbService.WritePlayer(new Player
+            {
+                ElapsedSeconds = (int)elapsed.TotalSeconds,
+                IsFinished = isFinished
+            });
+
+            _logger.LogInformation("Run saved to database");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save run to database");
+        }
+    }
+
+    private T? GetThreadSafe<T>(Func<T?> getter)
+    {
+        lock (_sync)
+            return getter();
+    }
+
+    private void SetThreadSafe(Action setter)
+    {
+        lock (_sync)
+            setter();
     }
 
     private bool TryEnsurePortOpen()
@@ -179,15 +150,33 @@ public class Timer(
             if (!_serialPort.IsOpen)
             {
                 _serialPort.Open();
-                _logger.LogInformation("Opened serial port {PortName}.", _serialPort.PortName);
+                _logger.LogInformation("Opened serial port: {Port}", _serialPort.PortName);
             }
-
             return true;
         }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or InvalidOperationException)
+        catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Serial port {PortName} not available.", _serialPort.PortName);
+            _logger.LogWarning(ex, "Serial port {Port} unavailable", _serialPort.PortName);
             return false;
         }
+    }
+
+    private void ClosePort()
+    {
+        try
+        {
+            if (_serialPort.IsOpen)
+                _serialPort.Close();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error closing port");
+        }
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        ClosePort();
+        await base.StopAsync(cancellationToken);
     }
 }

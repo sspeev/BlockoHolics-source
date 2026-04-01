@@ -1,6 +1,6 @@
+using BlockoHolicsWeb.Contracts;
 using BlockoHolicsWeb.Data.Models;
 using BlockoHolicsWeb.Models;
-using BlockoHolicsWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using static BlockoHolicsWeb.Constants.WebConstants.PortConstants;
@@ -90,23 +90,18 @@ namespace BlockoHolicsWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitRun(string playerName, long elapsedMs, bool isFinished)
+        public async Task<IActionResult> SubmitRun(SubmitRunRequest request)
         {
-            if (string.IsNullOrWhiteSpace(playerName))
-            {
-                playerName = "Anonymous";
-            }
-
-            if (elapsedMs <= 0)
+            if (!ModelState.IsValid)
             {
                 return RedirectToAction(nameof(Play));
             }
 
             await _dbService.WritePlayer(new Player
             {
-                Name = playerName.Trim(),
-                ElapsedSeconds = (int)Math.Max(1, Math.Round(elapsedMs / 1000.0)),
-                IsFinished = isFinished
+                Name = request.PlayerName.Trim(),
+                ElapsedSeconds = (int)Math.Round(request.ElapsedMs / 1000.0),
+                IsFinished = request.IsFinished
             });
 
             return RedirectToAction(nameof(Leaderboard));
