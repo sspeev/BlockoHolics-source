@@ -1,34 +1,67 @@
 #include "GameLogic.h"
 #include "../core/Messages.h"
+#include "../display/LCDHandler.h"
 
 GameLogic game;
 
 void GameLogic::init() {
   pinMode(buttonPin, INPUT_PULLUP);
-  Serial.println(MSG_GAME_START);
-  
+  Serial.println(MSG_GAME_READY);  // web page: show idle, don't start timer
+  waiting = true;
+  displayHandler.clearAll();
+  lcdHandler.showPressToStart();
+}
+
+// Called once when the player presses the button from the idle screen
+void GameLogic::startGame() {
+
+  lcdHandler.showCountingDown();
+  displayHandler.playCountdown();  // blocking ~4.5 s
+
   // GameState init
   currentLayerCount = 0;
-  currentWidth = 4;
-  currentPos = -currentWidth;
+  currentWidth      = 4;
+  currentPos        = -currentWidth;
+  moveDelay         = 150;
+  direction         = 1;
+  buttonPressCount  = 0;
+  gameOver          = false;
+  gameWon           = false;
   randomSeed(analogRead(0));
   updateMaxPosition();
-  
+  Serial.println(MSG_GAME_START);  // send immediately — before any blocking calls
+  Serial.flush();                  // ensure it's transmitted before countdown begins
+  lcdHandler.showPlaying();
   displayHandler.updateDisplay(currentLayerCount, layers, gameOver, currentPos, currentWidth);
 }
 
 void GameLogic::update() {
+  // ── Idle / waiting for button press ──────────────────────────────────────
+  if (waiting) {
+    if (checkButton()) {
+      waiting = false;
+      startGame();
+    }
+    return;
+  }
+
+  // ── Game-over screen ──────────────────────────────────────────────────────
   if (gameOver) {
-    // Blink matrices
-    static bool blinkState = false;
-    static unsigned long lastBlinkTime = 0;
-    if (millis() - lastBlinkTime > 500) {
-      lastBlinkTime = millis();
-      blinkState = !blinkState;
-      if (blinkState) {
-        displayHandler.updateDisplay(currentLayerCount, layers, gameOver, currentPos, currentWidth);
-      } else {
-        displayHandler.clearAll();
+    if (gameWon) {
+      // Flash "GG" on top and bottom matrices
+      displayHandler.tickWinAnimation();
+    } else {
+      // Blink the placed blocks
+      static bool blinkState = false;
+      static unsigned long lastBlinkTime = 0;
+      if (millis() - lastBlinkTime > 500) {
+        lastBlinkTime = millis();
+        blinkState = !blinkState;
+        if (blinkState) {
+          displayHandler.updateDisplay(currentLayerCount, layers, gameOver, currentPos, currentWidth);
+        } else {
+          displayHandler.clearAll();
+        }
       }
     }
     
@@ -64,17 +97,12 @@ void GameLogic::update() {
 }
 
 void GameLogic::reset() {
-  Serial.println(MSG_GAME_RESET);
+  Serial.println(MSG_GAME_RESET);  // web page: stop timer, show idle
   gameOver = false;
-  gameWon = false;
-  currentLayerCount = 0;
-  currentWidth = 4;
-  currentPos = -currentWidth;
-  moveDelay = 150;
-  direction = 1;
-  buttonPressCount = 0;
-  updateMaxPosition();
-  displayHandler.updateDisplay(currentLayerCount, layers, gameOver, currentPos, currentWidth);
+  gameWon  = false;
+  waiting  = true;
+  displayHandler.clearAll();
+  lcdHandler.showPressToStart();
 }
 
 void GameLogic::handleButtonPress() {
@@ -108,11 +136,12 @@ void GameLogic::placeBlock() {
   int overlapTop = max(prevPos, currentPos);
   int overlapBottom = min(prevPos + prevWidth - 1, currentPos + currentWidth - 1);
 
-  // No overlap -> game over
+  // No overlap -> game over (lose)
   if (overlapBottom < overlapTop) {
     displayHandler.clearMovingBlock(currentLayerCount, currentPos, currentWidth);
     gameOver = true;
-    gameWon = false;
+    gameWon  = false;
+    lcdHandler.showYouLost();
     Serial.println(MSG_GAME_OVER);
     return;
   }
@@ -132,7 +161,8 @@ void GameLogic::placeBlock() {
   if (totalUsedCols >= 32) {
     displayHandler.updatePlacedBlockDisplay(currentLayerCount - 1, layers);
     gameOver = true;
-    gameWon = true;
+    gameWon  = true;
+    lcdHandler.showYouWon();
     Serial.println(MSG_GAME_WIN);
     return;
   }

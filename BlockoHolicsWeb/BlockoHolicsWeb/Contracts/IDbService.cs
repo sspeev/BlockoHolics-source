@@ -8,5 +8,5 @@ public interface IDbService
 
     public Task WritePlayer(Player player);
 
-    Task<bool> IsRecentRunExists(int elapsedSeconds, int windowSeconds = 2, string playerName = "Anonymous");
+    Task<bool> IsRecentRunExists(double elapsedSeconds, double windowSeconds = 2, string playerName = "Anonymous");
 }

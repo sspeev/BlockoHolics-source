@@ -30,23 +30,41 @@ public class TimerGameEventHandler(
         {
             await HandleGameStop(isFinished: true);
         }
+        else if (IsGameIdle(line))
+        {
+            HandleGameIdle();
+        }
     }
 
+    // Timer starts only when "Game Started!" arrives (after the countdown)
     private bool IsGameStart(string line) =>
-        line.Equals("Game Started!", StringComparison.OrdinalIgnoreCase) ||
-        line.Equals("Game Reset!", StringComparison.OrdinalIgnoreCase);
+        line.Equals("Game Started!", StringComparison.OrdinalIgnoreCase);
 
+    // Timer stops and resets for "Game Over!" (lose)
     private bool IsGameOver(string line) =>
         line.Equals("Game Over!", StringComparison.OrdinalIgnoreCase);
 
+    // Timer stops and saves for "You Win!"
     private bool IsGameWon(string line) =>
         line.Equals("You Win!", StringComparison.OrdinalIgnoreCase);
+
+    // Idle state: reset/ready — clear the timer, don't start it
+    private bool IsGameIdle(string line) =>
+        line.Equals("Game Reset!", StringComparison.OrdinalIgnoreCase) ||
+        line.Equals("Game Ready!", StringComparison.OrdinalIgnoreCase);
 
     private void HandleGameStart()
     {
         _stopwatch.Restart();
         _setStoppedState(null, null);
-        _logger.LogInformation("Game started, timer reset");
+        _logger.LogInformation("Game started, timer running");
+    }
+
+    private void HandleGameIdle()
+    {
+        _stopwatch.Reset();   // stop and zero — not just Stop()
+        _setStoppedState(null, null);
+        _logger.LogInformation("Game idle/reset, timer cleared");
     }
 
     private async Task HandleGameStop(bool isFinished)

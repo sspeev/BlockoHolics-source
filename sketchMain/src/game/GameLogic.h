@@ -15,6 +15,7 @@ public:
   bool isGameOver() const { return gameOver; }
 
 private:
+  void startGame();
   void placeBlock();
   void updateMaxPosition();
   bool checkButton();
@@ -23,8 +24,9 @@ private:
   int currentPos = -4;   
   int direction = 1;     
   int moveDelay = 150;   
+  bool waiting  = true;   // true = idle, waiting for button press before countdown
   bool gameOver = false;
-  bool gameWon = false;
+  bool gameWon  = false;
   unsigned long lastMoveTime = 0;
   int maxPosition = 0;  
   int buttonPressCount = 0;

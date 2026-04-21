@@ -8,6 +8,7 @@ namespace BlockoHolicsWeb.Services;
 public class DbService(BlockoHolicsDbContext context) : IDbService
 {
     private readonly BlockoHolicsDbContext _context = context;
+
     public async Task<IList<Player>> GetPlayers()
     {
         return await _context.Players
@@ -19,9 +20,9 @@ public class DbService(BlockoHolicsDbContext context) : IDbService
                 ElapsedSeconds = p.ElapsedSeconds,
                 IsFinished = p.IsFinished
             })
-            .OrderByDescending(p => p.IsFinished)   // finished first
-            .ThenBy(p => p.ElapsedSeconds)          // fastest first
-            .ThenBy(p => p.Name)                    // stable tie-breaker
+            .OrderByDescending(p => p.IsFinished)
+            .ThenBy(p => p.ElapsedSeconds)
+            .ThenBy(p => p.Name)
             .ToListAsync();
     }
 
@@ -31,7 +32,7 @@ public class DbService(BlockoHolicsDbContext context) : IDbService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> IsRecentRunExists(int elapsedSeconds, int windowSeconds = 2, string playerName = "Anonymous")
+    public async Task<bool> IsRecentRunExists(double elapsedSeconds, double windowSeconds = 2, string playerName = "Anonymous")
     {
         return await _context.Players
             .Where(p => Math.Abs(p.ElapsedSeconds - elapsedSeconds) <= windowSeconds)

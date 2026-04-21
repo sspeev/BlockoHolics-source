@@ -14,7 +14,7 @@ namespace BlockoHolicsWeb.Data.Models
         public string Name { get; set; } = "Anonymous";
 
         [Required]
-        public int ElapsedSeconds { get; set; }
+        public double ElapsedSeconds { get; set; }
 
         [Required]
         public bool IsFinished { get; set; }

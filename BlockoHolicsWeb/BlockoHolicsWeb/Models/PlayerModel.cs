@@ -12,7 +12,7 @@ public class PlayerModel
 
     public string Time { get; set; } = string.Empty;
 
-    public long ElapsedMs { get; set; }
+    public double ElapsedMs { get; set; }
 
     public bool IsFinished { get; set; }
 }
