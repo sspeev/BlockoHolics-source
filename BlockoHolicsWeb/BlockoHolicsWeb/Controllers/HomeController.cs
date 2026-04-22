@@ -17,8 +17,6 @@ namespace BlockoHolicsWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            //_timer.Send(PortStartMessage);
-
             IList<Player> players = await _dbService.GetPlayers();
             IList<PlayerModel> playersModel = [.. players
                 .Select((p, index) =>
@@ -66,10 +64,8 @@ namespace BlockoHolicsWeb.Controllers
             return View(playersModel);
         }
 
-        public IActionResult Play()
-        {
-            return View();
-        }
+        [HttpGet]
+        public IActionResult Play() => View();
 
         [HttpGet]
         public IActionResult StopwatchState()
